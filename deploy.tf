@@ -12,7 +12,7 @@ variable "ssh_private_key" {
 }
 
 variable "number_of_workers" {
-	default = "0"
+	default = "1"
 }
 
 # Find current versions of k8s images at
@@ -104,6 +104,13 @@ resource "digitalocean_droplet" "k8s-master" {
             user = "core",
             private_key = "${file(var.ssh_private_key)}"
         }
+    }
+
+    # deploy kubernetes digitalocean secret for CCM and CSI
+    provisioner "local-exec" {
+        command=<<EOF
+            kubectl --kubeconfig=${path.module}/secrets/admin.conf apply -f ${path.module}/secrets/do-token.yaml
+EOF
     }
 
     # copy secrets to local
