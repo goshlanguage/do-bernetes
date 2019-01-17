@@ -1,6 +1,7 @@
 clean:
 	terraform destroy
-	rm -v plan.out terraform.tfstate
+	rm -vf plan.out terraform.tfstate
+	find $(CURDIR)/secrets/ -type f -delete
 
 deploy:
 	terraform plan -out plan.out
