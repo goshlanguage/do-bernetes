@@ -88,6 +88,19 @@ resource "digitalocean_droplet" "k8s-master" {
         }
     }
 
+    # This is a workaround to add a toleration to get flannel to install.
+    # This bug intermittently causes Kubernetes to not come up if deployed from
+    # CoreOS' upstream.
+    provisioner "file" {
+        source = "./flannel-v0.10.0.yaml"
+        destination = "/tmp/flannel-v0.10.0.yaml"
+        connection {
+            type = "ssh",
+            user = "core",
+            private_key = "${file(var.ssh_private_key)}"
+        }
+    }
+
     # Install dependencies and set up cluster
     provisioner "remote-exec" {
         inline = [
