@@ -19,7 +19,6 @@ kubeadm token create --print-join-command > /tmp/kubeadm_join
 chown core /etc/kubernetes/admin.conf
 
 
-
 # setup the DigitalOcean token secret to grant access to the cloud controller manager (CCM)
 # and the container storage interface (CSI)
 cat <<EOF | sudo tee /tmp/secret.yaml
@@ -45,4 +44,4 @@ kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://raw.githubuserc
 
 # setup the DigitalOcean CSI for kubernetes to manage it's own disks through PV and PVCs
 echo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://github.com/digitalocean/csi-digitalocean/blob/master/deploy/kubernetes/releases/csi-digitalocean-${CSI_VERSION}.yml
-# kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://github.com/digitalocean/csi-digitalocean/blob/master/deploy/kubernetes/releases/csi-digitalocean-${CSI_VERSION}.yml
+kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/digitalocean/csi-digitalocean/master/deploy/kubernetes/releases/csi-digitalocean-${CSI_VERSION}.yaml
