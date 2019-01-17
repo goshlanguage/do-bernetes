@@ -1,8 +1,11 @@
 #!/usr/bin/bash
-set -o nounset -o errexit
+# https://kvz.io/blog/2013/11/21/bash-best-practices/
+# set -e for errexit (exit if a command fails)
+# set -u for nounset (exit if script tries to use undefined variables)
+set -eu
 
 kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=${MASTER_PRIVATE_IP} --apiserver-cert-extra-sans=${MASTER_PUBLIC_IP}
-kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.0/Documentation/kube-flannel.yml
+kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
 systemctl enable docker kubelet
 
 # used to join nodes to the cluster
