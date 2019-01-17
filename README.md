@@ -101,7 +101,7 @@ kubectl get nodes
 Example:
 ```
 kubectl get nodes
-NAME            STATUS     ROLES    AGE    VERSION
-k8s-master      NotReady   master   109s   v1.13.2
-k8s-worker-01   NotReady   <none>   19s    v1.13.2
+NAME            STATUS   ROLES    AGE   VERSION
+k8s-master      Ready    master   13m   v1.13.2
+k8s-worker-01   Ready    <none>   10m   v1.13.2
 ```
