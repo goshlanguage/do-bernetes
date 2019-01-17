@@ -12,7 +12,7 @@ variable "ssh_private_key" {
 }
 
 variable "number_of_workers" {
-	default = "0"
+	default = "1"
 }
 
 # Find current versions of k8s images at
@@ -26,10 +26,15 @@ variable "k8s_version" {
 	default = "v1.10.2"
 }
 
-# When changing the k8s_version, it is important to also update CCM and CSI versions. Please see README.md for more information.
+# When changing the k8s_version, it is important to also update CCM and CSI versions.
+# https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/getting-started.md#version
+# https://github.com/digitalocean/digitalocean-cloud-controller-manager/tree/master/releases
 variable "ccm_version" {
     default = "v0.1.5"
 }
+
+# https://github.com/digitalocean/csi-digitalocean#kubernetes-compatibility
+# https://github.com/digitalocean/csi-digitalocean/tree/master/deploy/kubernetes/releases
 variable "csi_version" {
     default = "v0.2.0"
 }
@@ -76,6 +81,19 @@ resource "digitalocean_droplet" "k8s-master" {
     provisioner "file" {
         source = "./install-kubeadm.sh"
         destination = "/tmp/install-kubeadm.sh"
+        connection {
+            type = "ssh",
+            user = "core",
+            private_key = "${file(var.ssh_private_key)}"
+        }
+    }
+
+    # This is a workaround to add a toleration to get flannel to install.
+    # This bug intermittently causes Kubernetes to not come up if deployed from
+    # CoreOS' upstream.
+    provisioner "file" {
+        source = "./flannel-v0.10.0.yaml"
+        destination = "/tmp/flannel-v0.10.0.yaml"
         connection {
             type = "ssh",
             user = "core",
