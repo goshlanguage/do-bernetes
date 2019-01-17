@@ -26,4 +26,4 @@ override.tf.json
 plan.out
 
 ### Project Specic ###
-secrets
+secrets/*
