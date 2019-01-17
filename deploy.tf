@@ -23,20 +23,20 @@ variable "number_of_workers" {
 # Known working versions:
 # v1.10.3
 variable "k8s_version" {
-	default = "v1.13.2"
+	default = "v1.10.2"
 }
 
 # When changing the k8s_version, it is important to also update CCM and CSI versions.
 # https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/getting-started.md#version
 # https://github.com/digitalocean/digitalocean-cloud-controller-manager/tree/master/releases
 variable "ccm_version" {
-    default = "v0.1.8"
+    default = "v0.1.5"
 }
 
 # https://github.com/digitalocean/csi-digitalocean#kubernetes-compatibility
 # https://github.com/digitalocean/csi-digitalocean/tree/master/deploy/kubernetes/releases
 variable "csi_version" {
-    default = "v1.0.0"
+    default = "v0.2.0"
 }
 
 # https://github.com/containernetworking/cni/releases
