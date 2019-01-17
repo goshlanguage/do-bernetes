@@ -5,4 +5,4 @@ clean:
 
 deploy:
 	terraform plan -out plan.out
-	terraform apply "plan.out" -auto-approve
+	terraform apply -auto-approve "plan.out" 
