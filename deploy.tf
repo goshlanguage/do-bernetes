@@ -28,11 +28,13 @@ variable "k8s_version" {
 
 # When changing the k8s_version, it is important to also update CCM and CSI versions.
 # https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/getting-started.md#version
+# https://github.com/digitalocean/digitalocean-cloud-controller-manager/tree/master/releases
 variable "ccm_version" {
     default = "v0.1.8"
 }
 
 # https://github.com/digitalocean/csi-digitalocean#kubernetes-compatibility
+# https://github.com/digitalocean/csi-digitalocean/tree/master/deploy/kubernetes/releases
 variable "csi_version" {
     default = "v1.0.0"
 }
@@ -115,13 +117,6 @@ resource "digitalocean_droplet" "k8s-master" {
             scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${var.ssh_private_key} core@${digitalocean_droplet.k8s-master.ipv4_address}:"/tmp/kubeadm_join /etc/kubernetes/admin.conf" ${path.module}/secrets
             cp "${path.module}/secrets/admin.conf" "${path.module}/secrets/admin.conf.bak"
             sed -e "s/${self.ipv4_address_private}/${self.ipv4_address}/" "${path.module}/secrets/admin.conf.bak" > "${path.module}/secrets/admin.conf"
-EOF
-    }
-
-    # deploy kubernetes digitalocean secret for CCM and CSI
-    provisioner "local-exec" {
-        command=<<EOF
-            kubectl --kubeconfig=${path.module}/secrets/admin.conf apply -f ${path.module}/secrets/do-token.yaml
 EOF
     }
 }
