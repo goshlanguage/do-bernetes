@@ -4,6 +4,8 @@ do-bernetes
 
 Deploy a Kubernetes cluster to Digital Ocean simply enough to learn about it in the process.
 
+First of all, all attribution and inspiration for most of this project comes from [kubernetes-digitalocean-terraform](https://github.com/kubernetes-digitalocean-terraform/kubernetes-digitalocean-terraform). This project is simplified for the sake of being an approachable way to experiment with Kubernetes.
+
 # Quick Start
 
 If you are familiar with terraform and DigitalOcean, you can set the following environment variables,
@@ -24,8 +26,8 @@ Once you have your token setup, you can either paste it into the `do_token` fiel
 export TF_VAR_do_token=ENTER_YOUR_TOKEN_HERE
 ```
 
-You will also need an SSH key uploaded to DigitalOcean.
-[]()
+You will also need an SSH key uploaded to DigitalOcean. A guide for this can be found at [How to Upload SSH Public Keys to a DigitalOcean Account](https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/to-account/)
+
 
 After you've done that, you'll need to find it's MD5 fingerprint, as DigitalOcean uses this to select which SSH key it uses to grant access to your droplets.
 To do so, you can run:
@@ -45,9 +47,15 @@ terraform plan -out plan.out
 terraform apply "plan.out"
 ```
 
-## DigitalOcean controller manager and container storage interface ##
-After you plan and apply, you'll want to first create and deploy a kubernetes secret to give your cloud controller access to the DigitalOcean api on your behalf.
-To do that, create a file, say `secret.yaml`, replacing the following dummy API key with your own:
+This should bring up your Kubernetes cluster on DigitalOcean.
+
+# DigitalOcean controller manager and container storage interface #
+
+What follows is an explanation of how this project deploys the DigitalOcean [cloud controller manager](https://github.com/digitalocean/digitalocean-cloud-controller-manager) (CCM) and [container storage interface](https://raw.githubusercontent.com/digitalocean/csi-digitalocean/) (CSI) are deployed. Skip this if you just want to use Kubernetes or are disinterested in the details.
+
+In order to give the CCM and CSI authorization to do this on your behalf, this project uses the `TF_VAR_do_token` variable you entered before.
+
+It uses this variable to create a kubernetes secret. You can see the manifest in the `secrets/` directory.
 
 `secret.yaml`:
 ```
@@ -57,26 +65,30 @@ metadata:
   name: digitalocean
   namespace: kube-system
 stringData:
-  access-token: "a05dd2f26b9b9ac2asdas__REPLACE_ME____123cb5d1ec17513e06da"
+  access-token: "${TF_VAR_do_token}"
 ```
 
-After you've created this manifest, we can create it on your kubernetes cluster by running:
+After this manifest is created, we deploy it to your kubernetes master by running:
 ```
 kubectl create -f secret.yaml
 ```
 
-With this, we can launch the cloud controller manager to let kubernetes orchestrate things through the DigitalOcean API. To do so, we need to consult the cloud controller manager docs to make sure we launch the right one. Compatibility here is no joke. Check out (https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/getting-started.md#version) to make sure you use the right version.
+With this access, CCM can provision loadbalancers, disks, and more through the DigitalOcean API.
+
+# Updating Versions #
+
+It is important to consult the cloud controller manager docs when updating to ensure that you use compatible versions of Kubernetes relative to the CCM. Compatibility here is no joke. See (https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/getting-started.md#version) to make sure you use the right version.
 ```
 kubectl apply -f https://raw.githubusercontent.com/digitalocean/digitalocean-cloud-controller-manager/master/releases/v0.1.5.yml
 ```
 
-We also need to setup the Container storage interface (CSI) that allows Kubernetes to provision disks through the API. This software also has tight coupling on version. To ensure for compatibility, see first: (https://github.com/digitalocean/csi-digitalocean#kubernetes-compatibility). DigitalOcean's CSI can deployed by running:
+We also need to setup CSI that allows Kubernetes to provision disks through the API. This software also has tight coupling on version. To ensure for compatibility, see first: (https://github.com/digitalocean/csi-digitalocean#kubernetes-compatibility). DigitalOcean's CSI can deployed by running:
 ```
 kubectl apply -f https://raw.githubusercontent.com/digitalocean/csi-digitalocean/master/deploy/kubernetes/releases/csi-digitalocean-v0.2.0.yaml
 ```
 
-
-Finally, access your cluster by exporting the `KUBECONFIG` variable. While in this project's top level directory, run:
+# How to access your cluster
+You can access your cluster by setting and exporting the `KUBECONFIG` variable. While in this project's top level directory, run:
 ```
 export KUBECONFIG=$(pwd)/secrets/admin.conf
 ```
